@@ -5,28 +5,39 @@ import matplotlib.pyplot    as plt
 def spiral_v_contours_plot(
     
     spiral          = None,
+    spiral_max      = None,
     contours        = None,
     contour_cmap    = None,
-    contour_levels  = None
+    contour_levels  = None,
+    lim             = 4.5
 ):
 
     # setup the plot and axis labels
     plt.figure(figsize=(10,10))
     plt.xlabel('$\Delta$ RA ["]')
     plt.ylabel('$\Delta$ Dec ["]')
-    plt.xlim(-5, 5)
-    plt.ylim(-5, 5)
+    plt.xlim(-lim,lim)
+    plt.ylim(-lim,lim)
     
     if spiral is not None:
         
         s = spiral
         
         # set up the levels
-        max = np.max(s.v_field[2,:,:])
-        levels = np.linspace(-max, max, 299)
+        try:
+            max = np.max(s.v_field[2,:,:])
+            levels = np.linspace(-max, max, 299)
+        except:
+            levels = np.linspace(-spiral_max, spiral_max, 299)
+        
+        if spiral_max is not None:
+            levels = np.linspace(-spiral_max, spiral_max, 299)
         
         # plot the spiral
-        plt.contourf(s.X, s.Y, s.v_field[2,:,:], levels=levels, cmap="RdBu")
+        if s.type == "observations":
+            plt.contourf(-s.X, s.Y, s.data, levels=levels, cmap="RdBu")
+        else:
+            plt.contourf(s.X, s.Y, s.v_field[2,:,:], levels=levels, cmap="RdBu")
 
     if contours is not None:
         
