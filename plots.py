@@ -1,15 +1,20 @@
 # import libraries
 import numpy                as np
 import matplotlib.pyplot    as plt
+from numpy.__config__ import show
 
 def spiral_v_contours_plot(
     
     spiral          = None,
     spiral_max      = None,
+    spiral_levels   = None,
     contours        = None,
     contour_cmap    = None,
     contour_levels  = None,
-    lim             = 4.5
+    lim             = 4.5,
+    show            = True,
+    rafikov_wake    = None,
+    gap             = False
 ):
 
     # setup the plot and axis labels
@@ -28,13 +33,19 @@ def spiral_v_contours_plot(
             max = np.max(s.v_field[2,:,:])
             levels = np.linspace(-max, max, 299)
         except:
-            levels = np.linspace(-spiral_max, spiral_max, 299)
+            try:
+                levels = np.linspace(-spiral_max, spiral_max, 299)
+            except:
+                levels = spiral_levels
         
         if spiral_max is not None:
             levels = np.linspace(-spiral_max, spiral_max, 299)
+            
+        if spiral_levels is not None:
+            levels = spiral_levels
         
         # plot the spiral
-        if s.type == "observations":
+        if s.type == "observations" or s.type == "line":
             plt.contourf(-s.X, s.Y, s.data, levels=levels, cmap="RdBu")
         else:
             plt.contourf(s.X, s.Y, s.v_field[2,:,:], levels=levels, cmap="RdBu")
@@ -44,7 +55,7 @@ def spiral_v_contours_plot(
         c = contours
         
         # if using observations
-        if contours.type == "observations":
+        if c.type == "observations" or c.type == "line":
             
             if contour_cmap is None:
                 plt.contour(-c.X, c.Y, c.data, origin='lower', levels=contour_levels, colors=['k'], linestyles=["-"], linewidths=0.4)
@@ -58,4 +69,15 @@ def spiral_v_contours_plot(
             else:
                 plt.contour(c.X, c.Y, c.v_field[2,:,:], levels=contour_levels, cmap=contour_cmap, linestyles=["-"], linewidths=0.4)
                 
-    plt.show()
+    if rafikov_wake is not None:
+        
+        r = rafikov_wake
+        
+        if gap:
+            plt.plot(r.X[:-360], r.Y[:-360], c="k", alpha=0.2, ls="--")
+            plt.plot(r.X[-360:], r.Y[-360:], c="k", alpha=0.4, ls="-")
+        else:
+            plt.plot(r.X, r.Y, c="k", alpha=0.2, ls="--")
+    
+    if show:
+        plt.show()

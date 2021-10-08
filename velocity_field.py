@@ -4,6 +4,7 @@ import matplotlib.pyplot    as plt
 
 from astropy.io import fits
 from rotations  import rotation_matrix
+from flaring    import get_height
 
 # class for reading in and manipulating velocity fields
 class VelocityField():
@@ -66,11 +67,37 @@ class VelocityField():
             midpoint_dec    = crpix2 * cdelt2 * 3600
             self.X = np.linspace(-midpoint_ra, midpoint_ra, naxis1)
             self.Y = np.linspace(-midpoint_dec, midpoint_dec, naxis2)
+            
+        elif type == "line":
+            
+            # open file
+            file = f"line/{name}"
+            cube_1_fits = fits.open(file)
+            print(cube_1_fits)
+            
+            # read data
+            self.data = cube_1_fits[0].data[0,45,:,:] # - obs_sys_v*1e3
+            print(self.data.shape)
+            
+            # get header info to get grid
+            header = cube_1_fits[0].header
+            naxis1 = header['NAXIS1']
+            naxis2 = header['NAXIS2']
+            cdelt1 = header['CDELT1']
+            cdelt2 = header['CDELT2']
+            crpix1 = header['CRPIX1']
+            crpix2 = header['CRPIX2']
+            
+            # create grid
+            midpoint_ra     = crpix1 * cdelt1 * 3600
+            midpoint_dec    = crpix2 * cdelt2 * 3600
+            self.X = np.linspace(-midpoint_ra, midpoint_ra, naxis1)
+            self.Y = np.linspace(-midpoint_dec, midpoint_dec, naxis2)
         
         else:
-            raise ValueError("type must be wakeflow, phantom or observations")
+            raise ValueError("type must be wakeflow, phantom, line or observations")
         
-        if type != "observations":
+        if type != "observations" and type != "line":
             
             # get meshgrids for polar coordinates
             R = np.sqrt(self.X**2 + self.Y**2)
@@ -92,6 +119,9 @@ class VelocityField():
     ):
         
         print("Rotating velocity field")
+        
+        Z = get_height(self.X, self.Y, distance=self.distance)
+        print("edge height = ", Z[0,0])
         
         # check if type is observations (we don't want to rotate those)
         if self.type == "observations":
@@ -118,16 +148,16 @@ class VelocityField():
             for j in range(N_y):
                 
                 # rotate around the normal axis of the disk, corresponding the planet_az angle
-                self.X[i,j], self.Y[i,j], _     = np.dot(rot_pl_z, [self.X[i,j], self.Y[i,j], 0])
-                self.v_field[:,i,j]             = np.dot(rot_pl_z, self.v_field[:,i,j])
+                self.X[i,j], self.Y[i,j], Z[i,j]    = np.dot(rot_pl_z, [self.X[i,j], self.Y[i,j], Z[i,j]])
+                self.v_field[:,i,j]                 = np.dot(rot_pl_z, self.v_field[:,i,j])
                 
                 # rotate around the x-axis of the sky plane to match the inclination
-                self.X[i,j], self.Y[i,j], _     = np.dot(rot_in_x, [self.X[i,j], self.Y[i,j], 0])
-                self.v_field[:,i,j]             = np.dot(rot_in_x, self.v_field[:,i,j])
+                self.X[i,j], self.Y[i,j], Z[i,j]    = np.dot(rot_in_x, [self.X[i,j], self.Y[i,j], Z[i,j]])
+                self.v_field[:,i,j]                 = np.dot(rot_in_x, self.v_field[:,i,j])
 
                 # rotate around the normal axis of the sky plane to match the PA
-                self.X[i,j], self.Y[i,j], _     = np.dot(rot_pa_z, [self.X[i,j], self.Y[i,j], 0])
-                self.v_field[:,i,j]             = np.dot(rot_pa_z, self.v_field[:,i,j])
+                self.X[i,j], self.Y[i,j], Z[i,j]    = np.dot(rot_pa_z, [self.X[i,j], self.Y[i,j], Z[i,j]])
+                self.v_field[:,i,j]                 = np.dot(rot_pa_z, self.v_field[:,i,j])
                 
     def convert_to_angular_coordinates(self):
         
