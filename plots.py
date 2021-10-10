@@ -14,11 +14,12 @@ def spiral_v_contours_plot(
     lim             = 4.5,
     show            = True,
     rafikov_wake    = None,
-    gap             = False
+    gap             = False,
+    save            = None
 ):
 
     # setup the plot and axis labels
-    plt.figure(figsize=(10,10))
+    plt.figure(figsize=(7,5), dpi=150)
     plt.xlabel('$\Delta$ RA ["]')
     plt.ylabel('$\Delta$ Dec ["]')
     plt.xlim(-lim,lim)
@@ -49,6 +50,8 @@ def spiral_v_contours_plot(
             plt.contourf(-s.X, s.Y, s.data, levels=levels, cmap="RdBu")
         else:
             plt.contourf(s.X, s.Y, s.v_field[2,:,:], levels=levels, cmap="RdBu")
+            
+        plt.colorbar(label="Line of sight velocity [m/s]")
 
     if contours is not None:
         
@@ -65,7 +68,7 @@ def spiral_v_contours_plot(
         else:
             
             if contour_cmap is None:
-                plt.contour(c.X, c.Y, c.v_field[2,:,:], levels=contour_levels, colors=['k'], linestyles=["-"], linewidths=0.4)
+                plt.contour(c.X, c.Y, c.v_field[2,:,:], levels=contour_levels, colors=['k'], linestyles=["-"], linewidths=0.8)
             else:
                 plt.contour(c.X, c.Y, c.v_field[2,:,:], levels=contour_levels, cmap=contour_cmap, linestyles=["-"], linewidths=0.4)
                 
@@ -77,7 +80,11 @@ def spiral_v_contours_plot(
             plt.plot(r.X[:-360], r.Y[:-360], c="k", alpha=0.2, ls="--")
             plt.plot(r.X[-360:], r.Y[-360:], c="k", alpha=0.4, ls="-")
         else:
-            plt.plot(r.X, r.Y, c="k", alpha=0.2, ls="--")
+            plt.plot(r.X[:-360], r.Y[:-360], c="k", alpha=0.2, ls="--")
     
+    if save is not None:
+        
+        plt.savefig(f"{save}.pdf")
+        
     if show:
         plt.show()
