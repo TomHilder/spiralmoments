@@ -9,6 +9,8 @@ from flaring    import get_height
 # class for reading in and manipulating velocity fields
 class VelocityField():
     
+    angular_coords_bool = False
+    
     def __init__(
         self,
         type        = "wakeflow",
@@ -161,9 +163,18 @@ class VelocityField():
                 
     def convert_to_angular_coordinates(self):
         
-        # convert distance in pc to au
-        D = self.distance * 206265
+        if not self.angular_coords_bool:
+            
+            # convert distance in pc to au
+            D = self.distance * 206265
+            
+            # convert coordinates to angular coordinates in arcseconds
+            self.X = (3600 * self.X / D) * (180. / np.pi)
+            self.Y = (3600 * self.Y / D) * (180. / np.pi)
+            
+            # now in angular coords
+            self.angular_coords_bool = True
         
-        # convert coordinates to angular coordinates in arcseconds
-        self.X = (3600 * self.X / D) * (180. / np.pi)
-        self.Y = (3600 * self.Y / D) * (180. / np.pi)
+        else:
+            
+            print("already in angular coordinates")

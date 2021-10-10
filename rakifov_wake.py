@@ -7,6 +7,8 @@ from flaring    import get_height, spatial_to_angular
 
 class RafikovWake():
     
+    angular_coords_bool = False
+    
     def __init__(self, hrp=0.1, q=0.25, Rp=260, gap=False):
         
         R = np.linspace(10, 700, 1000)
@@ -64,5 +66,13 @@ class RafikovWake():
             
     def angular_coords(self, distance):
         
-        self.X = spatial_to_angular(self.X, distance)
-        self.Y = spatial_to_angular(self.Y, distance)
+        if not self.angular_coords_bool:
+        
+            self.X = spatial_to_angular(self.X, distance)
+            self.Y = spatial_to_angular(self.Y, distance)
+            
+            self.angular_coords_bool = True
+
+        else:
+            
+            print("already in angular coords")
