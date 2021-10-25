@@ -19,7 +19,7 @@ def spiral_v_contours_plot(
 ):
 
     # setup the plot and axis labels
-    plt.figure(figsize=(7,5), dpi=150)
+    plt.figure(figsize=(7,7), dpi=150)
     plt.xlabel('$\Delta$ RA ["]')
     plt.ylabel('$\Delta$ Dec ["]')
     plt.xlim(-lim,lim)
@@ -81,6 +81,8 @@ def spiral_v_contours_plot(
             plt.plot(r.X[-360:], r.Y[-360:], c="k", alpha=0.4, ls="-")
         else:
             plt.plot(r.X[:-360], r.Y[:-360], c="k", alpha=0.2, ls="--")
+    
+    plt.gca().set_aspect('equal', adjustable='box')
     
     if save is not None:
         
