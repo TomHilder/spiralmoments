@@ -197,24 +197,16 @@ class VelocityField():
         if X.ndim == 2:
             R = np.sqrt(X**2 + Y**2)
             R = spatial_to_angular(R, distance)
-            print(R)
             H = np.zeros(R.shape)
             H = self.height_func(R)
-            print(H)
             H = angular_to_spatial(H, distance)
-            print(H)
-            # plt.contourf(X, Y, H)
-            # plt.show()
 
         elif X.ndim == 1:
 
             R = np.sqrt(X**2 + Y**2)
             R = spatial_to_angular(R, distance)
-            print(R)
             H = self.height_func(R)
-            print(H)
             H = angular_to_spatial(H, distance)
-            print(H)
 
         return H
 
