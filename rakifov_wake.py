@@ -28,13 +28,6 @@ class RafikovWake():
         self.X = R * np.cos(PHI)
         self.Y = R * np.sin(PHI)
 
-        # self.X = np.zeros((len(R)))
-        # self.Y = np.zeros((len(R)))
-        #
-        # for i in range(len(R)):
-        #     self.X[i] = R[i] * np.cos(PHI[i])
-        #     self.Y[i] = R[i] * np.sin(PHI[i])
-
     def lin_array(self, lower_bound, upper_bound, steps, spacing=1.0):
         span = (upper_bound - lower_bound)
         dx = 1.0/(steps - 1)
