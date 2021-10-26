@@ -28,8 +28,8 @@ class VelocityField():
         if type == "wakeflow":
             
             # read in fields (midplane only)
-            v_r     = np.load(f"wakeflow/{name}/v_r.npy")[:,0,:]
-            v_phi   = np.load(f"wakeflow/{name}/v_phi.npy")[:,0,:]
+            self.v_r     = np.load(f"wakeflow/{name}/v_r.npy")[:,0,:]
+            self.v_phi   = np.load(f"wakeflow/{name}/v_phi.npy")[:,0,:]
             
             # read in grid (midplane again)
             self.X  = np.load(f"wakeflow/{name}/X.npy")[:,0,:]
@@ -38,11 +38,11 @@ class VelocityField():
         elif type == "phantom":
             
             # read in fields
-            v_r     = np.loadtxt(f"phantom/{name}/vr.pix").transpose()
-            v_phi   = np.loadtxt(f"phantom/{name}/vphi.pix").transpose()
+            self.v_r     = np.loadtxt(f"phantom/{name}/vr.pix").transpose()
+            self.v_phi   = np.loadtxt(f"phantom/{name}/vphi.pix").transpose()
             
             # create grid
-            length = v_r.shape[0]
+            length = self.v_r.shape[0]
             ax = np.linspace(-phantom_R, phantom_R, length)
             self.X, self.Y = np.meshgrid(ax, ax)
             
@@ -106,8 +106,8 @@ class VelocityField():
             PHI = np.arctan2(self.Y, self.X)
 
             # perform transformations
-            v_x = -v_phi * np.sin(PHI) + v_r * np.cos(PHI)
-            v_y = v_phi * np.cos(PHI) + v_r * np.sin(PHI)
+            v_x = -self.v_phi * np.sin(PHI) + self.v_r * np.cos(PHI)
+            v_y = self.v_phi * np.cos(PHI) + self.v_r * np.sin(PHI)
             v_z = np.zeros(v_x.shape)
             
             # define velocity field (convert to m/s)
@@ -117,7 +117,8 @@ class VelocityField():
         self, 
         PA          = 0,
         inc         = 0,
-        planet_az   = 0
+        planet_az   = 0,
+        grid_rotate = True
     ):
         
         print("Rotating velocity field")
@@ -149,16 +150,20 @@ class VelocityField():
         for i in range(N_x):
             for j in range(N_y):
                 
+                # rotate grid
+                if grid_rotate:
+                    
+                    self.X[i,j], self.Y[i,j], Z[i,j]    = np.dot(rot_pl_z, [self.X[i,j], self.Y[i,j], Z[i,j]])
+                    self.X[i,j], self.Y[i,j], Z[i,j]    = np.dot(rot_in_x, [self.X[i,j], self.Y[i,j], Z[i,j]])
+                    self.X[i,j], self.Y[i,j], Z[i,j]    = np.dot(rot_pa_z, [self.X[i,j], self.Y[i,j], Z[i,j]])
+                    
                 # rotate around the normal axis of the disk, corresponding the planet_az angle
-                self.X[i,j], self.Y[i,j], Z[i,j]    = np.dot(rot_pl_z, [self.X[i,j], self.Y[i,j], Z[i,j]])
                 self.v_field[:,i,j]                 = np.dot(rot_pl_z, self.v_field[:,i,j])
                 
                 # rotate around the x-axis of the sky plane to match the inclination
-                self.X[i,j], self.Y[i,j], Z[i,j]    = np.dot(rot_in_x, [self.X[i,j], self.Y[i,j], Z[i,j]])
                 self.v_field[:,i,j]                 = np.dot(rot_in_x, self.v_field[:,i,j])
 
                 # rotate around the normal axis of the sky plane to match the PA
-                self.X[i,j], self.Y[i,j], Z[i,j]    = np.dot(rot_pa_z, [self.X[i,j], self.Y[i,j], Z[i,j]])
                 self.v_field[:,i,j]                 = np.dot(rot_pa_z, self.v_field[:,i,j])
                 
     def convert_to_angular_coordinates(self):

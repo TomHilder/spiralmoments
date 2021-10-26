@@ -9,7 +9,7 @@ class RafikovWake():
 
     angular_coords_bool = False
 
-    def __init__(self, hrp=0.1, q=0.25, Rp=260, gap=False, rin=100, rout=600, npoints=1000, spacing=1.0):
+    def __init__(self, hrp=0.1, q=0.25, Rp=260, gap=False, rin=100, rout=600, npoints=1000, spacing=1.0, cw=1):
 
         R = self.lin_array(rin, rout, npoints, spacing=spacing)
 
@@ -17,7 +17,7 @@ class RafikovWake():
         term2 = -((R / Rp)**(q + 1)) / (q + 1)
         term3 = -3 / ((2*q - 1) * (q + 1))
 
-        PHI = np.sign(R - Rp) * (hrp**-1) * (term1 + term2 + term3)
+        PHI = cw * np.sign(R - Rp) * (hrp**-1) * (term1 + term2 + term3)
 
         if gap:
             planet_ring_R   = Rp*np.ones(360)
