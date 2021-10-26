@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.interpolate import interp1d, UnivariateSpline
 
 def get_height_func(height):
     if height == 'spline':

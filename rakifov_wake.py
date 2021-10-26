@@ -3,7 +3,7 @@ import numpy                as np
 import matplotlib.pyplot    as plt
 
 from rotations  import rotation_matrix
-from flaring    import get_height, spatial_to_angular
+from flaring    import get_height, spatial_to_angular, get_height_func, angular_to_spatial
 
 class RafikovWake():
 
@@ -35,7 +35,14 @@ class RafikovWake():
 
     def rotate_wake(self, PA, planet_az, inc, distance):
 
-        Z = get_height(self.X, self.Y, distance=distance)
+        Z_func = get_height_func('tapered')
+        
+        R = np.sqrt(self.X**2 + self.Y**2)
+        R = spatial_to_angular(R, distance)
+
+        Z = Z_func(R)
+        
+        Z = angular_to_spatial(Z, distance)
 
         # print("Rotating wake")
 
@@ -64,6 +71,8 @@ class RafikovWake():
 
             # rotate around the normal axis of the sky plane to match the PA
             self.X[i], self.Y[i], Z[i]    = np.dot(rot_pa_z, [self.X[i], self.Y[i], Z[i]])
+            
+        self.Z = Z
 
     def deproject_wake(self, PA, planet_az, inc, distance):
 
@@ -163,6 +172,10 @@ class RafikovWake():
 
             self.X = spatial_to_angular(self.X, distance)
             self.Y = spatial_to_angular(self.Y, distance)
+            try:
+                self.Z = spatial_to_angular(self.Z, distance)
+            except:
+                pass
 
             self.angular_coords_bool = True
 
