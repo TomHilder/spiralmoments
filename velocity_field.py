@@ -118,12 +118,14 @@ class VelocityField():
         PA          = 0,
         inc         = 0,
         planet_az   = 0,
-        grid_rotate = True
+        grid_rotate = True,
+        height      = 1
     ):
         
         print("Rotating velocity field")
         
-        Z = get_height(self.X, self.Y, distance=self.distance)
+        Z = height * get_height(self.X, self.Y, distance=self.distance)
+        
         print("edge height = ", Z[0,0])
         
         # check if type is observations (we don't want to rotate those)
