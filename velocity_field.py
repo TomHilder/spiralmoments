@@ -73,7 +73,7 @@ class VelocityField():
         elif type == "line":
             
             # open file
-            file = f"line/{name}"
+            file = name # f"line/{name}"
             cube_1_fits = fits.open(file)
             print(cube_1_fits)
             
