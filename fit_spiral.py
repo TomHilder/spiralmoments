@@ -303,7 +303,8 @@ class FitSpiral():
 
 class Spiral(RafikovWake):
     def __init__(self, hrp=0.08, q=0.25, Rp=260, inc=45,
-                        planet_az=45, PA=45, distance=100, rin=10, rout=500, npoints=1000, spacing=1.0, height='spline'):
+                        planet_az=45, PA=45, distance=100, rin=10, rout=500,
+                        npoints=1000, spacing=1.0, height='spline', bottom=False):
 
         self.hrp = hrp
         self.q = q
@@ -313,6 +314,7 @@ class Spiral(RafikovWake):
         self.PA = PA
         self.distance = distance
         self.height = height
+        self.bottom = bottom
 
         if self.height == 'spline':
             arr = np.load('binned_surface.npy')
@@ -338,7 +340,9 @@ class Spiral(RafikovWake):
             self.height_func = self.height_simple
 
         elif self.height == 'tapered':
-            arr = np.load('tapered_surface.npy')
+            # arr = np.load('tapered_surface.npy')
+            # print(arr)
+            arr = [0.388, 1.851, 2.362, 1.182]
 
             def tapered_powerlaw(r, z0, q, r_taper=np.inf, q_taper=1.0, r_cavity=0.0,
                                   r0=1.0):
@@ -358,6 +362,7 @@ class Spiral(RafikovWake):
 
             self.height_func = height
 
+
         super(Spiral, self).__init__(hrp=self.hrp, q=self.q, Rp=self.Rp, gap=False, rin=rin, rout=rout, npoints=npoints, spacing=spacing)
 
         self.rotate_wake()
@@ -367,6 +372,9 @@ class Spiral(RafikovWake):
     def rotate_wake(self):
 
         Z = self.get_height(self.X, self.Y)
+        if self.bottom:
+            Z = -Z
+
         # get number of points
         N_x = self.X.shape[0]
         assert self.Y.shape[0] == N_x
