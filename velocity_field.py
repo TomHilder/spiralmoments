@@ -14,6 +14,7 @@ class VelocityField():
         self,
         type        = "wakeflow",
         name        = "",
+        delta       = None,
         phantom_R   = 500,
         obs_sys_v   = 5.750,
         obs_dist    = 101.5,
@@ -29,14 +30,32 @@ class VelocityField():
 
         if type == "wakeflow":
 
-            # read in fields (midplane only)
-            self.v_r     = np.load(f"wakeflow/{name}/v_r.npy")[:,0,:]
-            self.v_phi   = np.load(f"wakeflow/{name}/v_phi.npy")[:,0,:]
+            if delta is not None:
 
-            # read in grid (midplane again)
-            self.X  = np.load(f"wakeflow/{name}/X.npy")[:,0,:]
-            self.Y  = np.load(f"wakeflow/{name}/Y.npy")[:,0,:]
-            self.angular_coords_bool = False
+                if delta:
+                    label = "delta"
+                else:
+                    label = "total"
+
+                # read in fields (midplane only)
+                self.v_r     = np.load(f"wakeflow/{name}/{label}_v_r.npy")[:,0,:]
+                self.v_phi   = np.load(f"wakeflow/{name}/{label}_v_phi.npy")[:,0,:]
+
+                # read in grid (midplane again)
+                self.Y  = np.load(f"wakeflow/{name}/Y.npy")[:,0,:]
+                self.X  = np.load(f"wakeflow/{name}/X.npy")[:,0,:]
+                self.angular_coords_bool = False
+            
+            else:
+
+                # read in fields (midplane only)
+                self.v_r     = np.load(f"wakeflow/{name}/v_r.npy")[:,0,:]
+                self.v_phi   = np.load(f"wakeflow/{name}/v_phi.npy")[:,0,:]
+
+                # read in grid (midplane again)
+                self.Y  = np.load(f"wakeflow/{name}/Y.npy")[:,0,:]
+                self.X  = np.load(f"wakeflow/{name}/X.npy")[:,0,:]
+                self.angular_coords_bool = False
 
         elif type == "phantom":
 
@@ -84,7 +103,7 @@ class VelocityField():
             print(cube_1_fits)
 
             # read data
-            self.data = cube_1_fits[0].data[0,45,:,:] # - obs_sys_v*1e3
+            self.data = cube_1_fits[0].data[45,:,:] # - obs_sys_v*1e3
             print(self.data.shape)
 
             # get header info to get grid
@@ -133,6 +152,7 @@ class VelocityField():
         Z = self.get_height(self.X, self.Y, distance=self.distance)
 
         print("edge height = ", Z[0,0])
+        print("max height = ", np.max(Z))
 
         # check if type is observations (we don't want to rotate those)
         if self.type == "observations":
@@ -198,7 +218,9 @@ class VelocityField():
             R = np.sqrt(X**2 + Y**2)
             R = spatial_to_angular(R, distance)
             H = np.zeros(R.shape)
-            H = self.height_func(R)
+            Z_func = get_height_func('tapered')
+            H = Z_func(R)
+            #H = self.height_func(R)
             H = angular_to_spatial(H, distance)
 
         elif X.ndim == 1:
